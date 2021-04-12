@@ -44,18 +44,18 @@ Moving Map Parameters = MM?    These follow if they exist
 MM0,Yes
 MMPNUM,4
 MMPXY,1,0,0
-MMPXY,2,4000,0
-MMPXY,3,4000,5000
-MMPXY,4,0,5000
-MMPLL,1,   6.512032,  53.269880
-MMPLL,2,   6.661913,  53.268373
-MMPLL,3,   6.658585,  53.156059
-MMPLL,4,   6.509095,  53.157560
+MMPXY,2,8000,0
+MMPXY,3,8000,10000
+MMPXY,4,0,10000
+MMPLL,1,   $nwLon$,  $nwLat$
+MMPLL,2,   $neLon$,  $neLat$
+MMPLL,3,   $seLon$,  $seLat$
+MMPLL,4,   $swLon$,  $swLat$
 MM1B,2.496705
 LL Grid Setup
-LLGRID,No,10 Sec,Yes,255,16711680,0,No Labels,0,16777215,7,1,Yes,x
+LLGRID,Yes,10 Sec,Yes,255,16711680,0,No Labels,0,16777215,7,1,Yes,x
 Other Grid Setup
-GRGRID,Yes,1 Km,No,14737632,13684944, Labels,0,16777215,8,1,Yes,No,No,x
+GRGRID,No,1 Km,No,14737632,13684944, Labels,0,16777215,8,1,Yes,No,No,x
 MOP,Map Open Position,0,0
 MOPLL,Map Open Position,0.0000000,0.0000000,100
 IWH,Map Image Width/Height,4000,5000

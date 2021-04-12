@@ -19,6 +19,12 @@ import java.io.IOException;
  */
 public class Generator
 {
+    // Coordinates
+    // NW(xmin, ymax)       NE(xmax, ymax)
+    //
+    // SW(xmin, ymin)       SE(xmax, ymin)
+    
+    
     public class Calibration
     {
         public String   mapNumber;
@@ -30,9 +36,84 @@ public class Generator
         public int      year;
     }
     
+    public class LatLon
+    {
+        public double lat;
+        public double lon;
+    }
+    
     private static final String COMMA_DELIMITER=",";
     private List<Calibration>   calibrations;
     private String              template;
+    
+    private LatLon RdToLanLon(double x, double y)
+    {
+        double dX;
+        double dY;
+        double SomN;
+        double SomE;
+        double scale=0.999907900;
+        
+        LatLon ll=new LatLon();
+        
+	dX = (x - 155000) * 0.00001;
+	dY = (y - 463000) * 0.00001;
+
+/*        
+	SomN = (3235.65389 * dY) + 
+                (-32.58297 * dX ^ 2) + 
+                (-0.2475 * dY ^ 2) + 
+                (-0.84978 * dX ^ 2 * dY) + 
+                (-0.0655 * dY ^ 3) + 
+                (-0.01709 * dX ^ 2 * dY ^ 2) + 
+                (-0.00738 * dX) + 
+                (0.0053 * dX ^ 4) + 
+                (-0.00039 * dX ^ 2 * dY ^ 3) + 
+                (0.00033 * dX ^ 4 * dY) + 
+                (-0.00012 * dX * dY)
+	SomE = (5260.52916 * dX) + 
+                (105.94684 * dX * dY) + 
+                (2.45656 * dX * dY ^ 2) + 
+                (-0.81885 * dX ^ 3) + 
+                (0.05594 * dX * dY ^ 3) + 
+                (-0.05607 * dX ^ 3 * dY) + 
+                (0.01199 * dY) + 
+                (-0.00256 * dX ^ 3 * dY ^ 2) + 
+                (0.00128 * dX * dY ^ 4) + 
+                (0.00022 * dY ^ 2) + 
+                (-0.00022 * dX ^ 2) + 
+                (0.00026 * dX ^ 5)
+*/        
+        
+	SomN = (3235.65389 * dY) + 
+               (-32.58297 * dX*dX) + 
+               (-0.2475 * dY*dY) + 
+               (-0.84978 * dX * dX * dY) + 
+               (-0.0655 * dY * dY *dY) + 
+               (-0.01709 * dX *dX * dY *dY) + 
+               (-0.00738 * dX) + 
+               (0.0053 * dX * dX * dX * dX) + 
+               (-0.00039 * Math.pow(dX, 2) * Math.pow(dY, 3)) + 
+               (0.00033 * Math.pow(dX, 4) * dY) + 
+               (-0.00012 * dX * dY);
+	SomE = (5260.52916 * dX) + 
+                (105.94684 * dX * dY) + 
+                (2.45656 * dX * Math.pow(dY, 2)) + 
+                (-0.81885 * Math.pow(dX, 3)) + 
+                (0.05594 * dX * Math.pow(dY, 3)) + 
+                (-0.05607 * Math.pow(dX, 3) * dY) + 
+                (0.01199 * dY) + 
+                (-0.00256 * Math.pow(dX, 3) * Math.pow(dY, 2)) + 
+                (0.00128 * dX * Math.pow(dY, 4)) + 
+                (0.00022 /** Math.pow(dY, 2)*/) + 
+                (-0.00022 * Math.pow(dX, 2)) + 
+                (0.00026 * Math.pow(dX, 5));
+
+	ll.lat = 52.1551744 + (SomN / 3600.0);
+	ll.lon = 5.38720621 + (SomE / 3600.0);
+
+        return ll;
+    }
     
     private void readCallibrations(String filename)
     {
@@ -95,6 +176,7 @@ public class Generator
     {
         String fileString;
         String filename;
+        LatLon ll;
         
         filename=path+cal.mapNumber.toLowerCase()+"-top25raster-"+cal.year+".map";
         fileString=template.replace("$number$", cal.mapNumber.toLowerCase());
@@ -104,6 +186,23 @@ public class Generator
         fileString=fileString.replace("$yMin$", Integer.toString(cal.yMin));
         fileString=fileString.replace("$yMax$", Integer.toString(cal.yMax));
         fileString=fileString.replace("$year$", Integer.toString(cal.year));
+        
+        ll=this.RdToLanLon(cal.xMin, cal.yMax);
+        fileString=fileString.replace("$nwLat$", Double.toString(ll.lat));
+        fileString=fileString.replace("$nwLon$", Double.toString(ll.lon));
+
+        ll=this.RdToLanLon(cal.xMax, cal.yMax);
+        fileString=fileString.replace("$neLat$", Double.toString(ll.lat));
+        fileString=fileString.replace("$neLon$", Double.toString(ll.lon));
+        
+        ll=this.RdToLanLon(cal.xMin, cal.yMin);
+        fileString=fileString.replace("$swLat$", Double.toString(ll.lat));
+        fileString=fileString.replace("$swLon$", Double.toString(ll.lon));
+
+        ll=this.RdToLanLon(cal.xMax, cal.yMin);
+        fileString=fileString.replace("$seLat$", Double.toString(ll.lat));
+        fileString=fileString.replace("$seLon$", Double.toString(ll.lon));
+        
 
         try
         {
