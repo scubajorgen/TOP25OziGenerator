@@ -53,13 +53,12 @@ public class Generator
      * @param y Northing
      * @return WGS84 lat/lon coordinate
      */
-    private LatLon RdToLanLon(double x, double y)
+    public LatLon RdToLanLon(double x, double y)
     {
         double dX;
         double dY;
         double SomN;
         double SomE;
-        double scale=0.999907900;
         
         LatLon ll=new LatLon();
         
@@ -95,6 +94,55 @@ public class Generator
 
         return ll;
     }
+    
+    /**
+     * Conversion of RD coordinates to Bessel 1841 LatLon. 
+     * @param x RD Easting in m
+     * @param y RD Northing in m
+     * @return Latitude/Longitude
+     */
+    public LatLon rdToBesselLatLon(double x, double y)
+    {
+        double a        =6377397.155;       // m
+        double e        =0.081696831222;    // 
+        double phi0     =52.156160556/360.0*2.0*Math.PI;      // rad
+        double lambda0  = 5.387638889/360.0*2.0*Math.PI;      // rad
+        double B0       =52.121097249/360.0*2.0*Math.PI;      // rad
+        double L0       = 5.387638889/360.0*2.0*Math.PI;      // rad
+        double n        =1.00047585668;
+        double m        =0.003773953832;
+        double R        =6382644.571;       // m
+        double k        =0.9999079;
+        double x0       =155000;            // m
+        double y0       =463000;            // m 
+
+        double r        =Math.sqrt(Math.pow(x-x0,2)+Math.pow(y-y0, 2));
+        double sinAlpha =(x-x0)/r;
+        double cosAlpha =(y-y0)/r;
+        double psi      =2.0*Math.atan(r/(2.0*k*R));
+        double B        =Math.asin(cosAlpha*Math.cos(B0)*Math.sin(psi)+Math.sin(B0)*Math.cos(psi));
+        double deltaL   =Math.asin(sinAlpha*Math.sin(psi)/Math.cos(B));
+        double lambda   =deltaL/n+lambda0;
+
+        double w        =Math.log(Math.tan(0.5*B+0.25*Math.PI));
+        double q        =(w-m)/n;
+        double phix     =2.0*Math.atan(Math.exp(q))-Math.PI*0.5;   
+        
+        double deltaQ;
+        int i=0;
+        while (i<4)
+        {
+            deltaQ=0.5*e*Math.log((1+e*Math.sin(phix))/(1-e*Math.sin(phix)));
+            phix     =2.0*Math.atan(Math.exp(q+deltaQ))-Math.PI*0.5; 
+            i++;
+        }
+        
+        LatLon ll=new LatLon();
+        ll.lon=lambda*360.0/2.0/Math.PI;
+        ll.lat=phix  *360.0/2.0/Math.PI;
+        return ll;
+    }
+    
     
     private void readCallibrations(String filename)
     {
@@ -168,19 +216,19 @@ public class Generator
         fileString=fileString.replace("$yMax$", Integer.toString(cal.yMax));
         fileString=fileString.replace("$year$", Integer.toString(cal.year));
         
-        ll=this.RdToLanLon(cal.xMin, cal.yMax);
+        ll=this.rdToBesselLatLon(cal.xMin, cal.yMax);
         fileString=fileString.replace("$nwLat$", Double.toString(ll.lat));
         fileString=fileString.replace("$nwLon$", Double.toString(ll.lon));
 
-        ll=this.RdToLanLon(cal.xMax, cal.yMax);
+        ll=this.rdToBesselLatLon(cal.xMax, cal.yMax);
         fileString=fileString.replace("$neLat$", Double.toString(ll.lat));
         fileString=fileString.replace("$neLon$", Double.toString(ll.lon));
         
-        ll=this.RdToLanLon(cal.xMin, cal.yMin);
+        ll=this.rdToBesselLatLon(cal.xMin, cal.yMin);
         fileString=fileString.replace("$swLat$", Double.toString(ll.lat));
         fileString=fileString.replace("$swLon$", Double.toString(ll.lon));
 
-        ll=this.RdToLanLon(cal.xMax, cal.yMin);
+        ll=this.rdToBesselLatLon(cal.xMax, cal.yMin);
         fileString=fileString.replace("$seLat$", Double.toString(ll.lat));
         fileString=fileString.replace("$seLon$", Double.toString(ll.lon));
         
@@ -203,14 +251,24 @@ public class Generator
         calibrations.stream().forEach(c -> writeMapFile(path, c));
     }
     
+    /**
+     * Create the map files
+     * @param gen Generator instance
+     */
+    public void generate()
+    {
+        readCallibrations("Bladnaam_nummer_coord_25000.csv");
+        readTemplate("template.map");
+        writeMapFiles("./maps/");        
+    }
+    
     public static void main(String[] args)
     {
         Generator gen;
         
         gen=new Generator();
-        gen.readCallibrations("Bladnaam_nummer_coord_25000.csv");
-        gen.readTemplate("template.map");
-        gen.writeMapFiles("./maps/");
+        gen.generate();
+        
         System.out.println("Done");
     }
 }
