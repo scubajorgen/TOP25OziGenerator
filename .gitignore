@@ -1,5 +1,6 @@
 target/
 maps/*.map
 /nbproject/
-TOP25raster_GEOTIFF/*
-TOP25raster_Productinformatie/*
+TOP25raster_GEOTIFF/*.tif
+TOP25raster_GEOTIFF/*.tif
+TOP25raster_Productinformatie/*.xls

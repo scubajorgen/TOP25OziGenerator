@@ -93,6 +93,8 @@ Or build it in your favourite IDE (Netbeans, ...)
    This wil generate the **.map** files in the directory _/TOP25raster_GEOTIFF_
 5. You can now open the maps in OZI Explorer 
 
+## Template
+The template file is _/template.map_. You can adjust it. It is used for all **.map** files. Fields that are filled in by the software have the format $...$, like $name$.
 
 ## About the Top25 Raster files
 The map datum is [Rijksdriehoeksmeting](https://nl.wikipedia.org/wiki/Rijksdriehoeksco%C3%B6rdinaten), with false northing 155000 and false easting -5316592.
