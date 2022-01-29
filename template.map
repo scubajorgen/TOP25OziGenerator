@@ -53,9 +53,9 @@ MMPLL,3,   $seLon$,  $seLat$
 MMPLL,4,   $swLon$,  $swLat$
 MM1B,2.496705
 LL Grid Setup
-LLGRID,Yes,10 Sec,Yes,255,16711680,0,No Labels,0,16777215,7,1,Yes,x
+LLGRID,No,10 Sec,Yes,255,16711680,0,No Labels,0,16777215,7,1,Yes,x
 Other Grid Setup
-GRGRID,No,1 Km,No,14737632,13684944, Labels,0,16777215,8,1,Yes,No,No,x
+GRGRID,Yes,1 Km,No,5450740,15441496,Labels,0,16777215,8,1,Yes,No,No,x
 MOP,Map Open Position,0,0
 MOPLL,Map Open Position,0.0000000,0.0000000,100
 IWH,Map Image Width/Height,4000,5000
