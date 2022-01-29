@@ -6,9 +6,9 @@
 package net.studioblueplanent.top25ozigenerator;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,16 +25,7 @@ public class Generator
     // SW(xmin, ymin)       SE(xmax, ymin)
     
     
-    public class Calibration
-    {
-        public String   mapNumber;
-        public String   mapName;
-        public int      xMin;
-        public int      xMax;
-        public int      yMin;
-        public int      yMax;
-        public int      year;
-    }
+
     
     public class LatLon
     {
@@ -42,8 +33,10 @@ public class Generator
         public double lon;
     }
     
+    private static final String EXCELFILE="TOP25raster_Productinformatie/Bladnaam_nummer_coord 25000.xls";
+    private static final String TIFFDIRECTORY="TOP25raster_GEOTIFF";
     private static final String COMMA_DELIMITER=",";
-    private List<Calibration>   calibrations;
+    private Calibrations        calibrations;
     private String              template;
     
     /**
@@ -144,40 +137,6 @@ public class Generator
     }
     
     
-    private void readCallibrations(String filename)
-    {
-        calibrations = new ArrayList<>();
-        try
-        {
-            try (BufferedReader br = new BufferedReader(new FileReader(filename))) 
-            {
-                String line;
-                System.out.println("Reading calibrations");
-                br.readLine();
-                br.readLine();
-                while ((line = br.readLine()) != null) {
-                    String[] values = line.split(COMMA_DELIMITER);
-                    if (values.length==8)
-                    {
-                        Calibration cal=new Calibration();
-                        cal.mapNumber=values[0];
-                        cal.mapName  =values[1];
-                        cal.xMin     =Integer.parseInt(values[3]);
-                        cal.yMin     =Integer.parseInt(values[4]);
-                        cal.xMax     =Integer.parseInt(values[5]);
-                        cal.yMax     =Integer.parseInt(values[6]);
-                        cal.year     =Integer.parseInt(values[7]);
-                        calibrations.add(cal);
-                    }
-                }
-            }  
-        }
-        catch (IOException e)
-        {
-            System.err.println("Error reading calibration file "+filename);
-        }
-    }
-    
     private void readTemplate(String filename)
     {
         StringBuilder contentBuilder = new StringBuilder();
@@ -201,13 +160,16 @@ public class Generator
         template=contentBuilder.toString();
     }
     
-    private void writeMapFile(String path, Calibration cal)
+    /** 
+     * Write the map file using the template and the calibration passed
+     * @param filename Name of the file
+     * @param cal Calibration of the map file
+     */
+    private void writeMapFile(String filename, Calibration cal)
     {
         String fileString;
-        String filename;
         LatLon ll;
         
-        filename=path+cal.mapNumber.toLowerCase()+"-top25raster-"+cal.year+".map";
         fileString=template.replace("$number$", cal.mapNumber.toLowerCase());
         fileString=fileString.replace("$name$", cal.mapName);
         fileString=fileString.replace("$xMin$", Integer.toString(cal.xMin));
@@ -245,11 +207,59 @@ public class Generator
             System.err.println("Error reading template file "+filename);
         }        
     }
-    
-    private void writeMapFiles(String path)
+
+
+    /**
+     * Write the .map files based on the .tif files in the directory passed
+     * @param tiffDirectory The directory containing the tiff files 
+     */
+    private void writeMapFiles(String tiffDirectory)
     {
-        calibrations.stream().forEach(c -> writeMapFile(path, c));
+        String      mapNumber;
+        String      mapYear;
+        Calibration c;
+        
+        File        folder = new File(tiffDirectory);
+        File[]      listOfFiles = folder.listFiles();  
+        
+        int i=0;
+        while (i<listOfFiles.length)
+        {
+            System.out.println("Processing file "+listOfFiles[i].getName());
+            
+            // Get the first part (01c-top25raster-2019) of the filename (01c-top25raster-2019.tif)
+            if (listOfFiles[i].getName().endsWith(".tif"))
+            {
+                String fileName=listOfFiles[i].getName().replace(".tif", "");
+                if (fileName!=null)
+                {
+                    // Split the first part into subparts
+                    String[] parts = fileName.split("-");
+                    if (parts.length==3)
+                    {
+                        mapNumber=parts[0].toUpperCase();
+                        mapYear  =parts[2];
+                        c=calibrations.getCalibration(mapNumber);
+                        if (c==null)
+                        {
+                            System.err.println("Calibration not found for map "+listOfFiles[i].getName());
+                        }
+                        else
+                        {
+                            c.setYear(Integer.parseInt(mapYear));
+                            writeMapFile(listOfFiles[i].getAbsolutePath().replace(".tif", ".map"), c);
+                        }
+                    }
+                    else
+                    {
+                        System.err.println("Unexpected file: "+listOfFiles[i].getName());
+                    }
+                }
+            }
+            i++;
+        }
     }
+    
     
     /**
      * Create the map files
@@ -257,9 +267,10 @@ public class Generator
      */
     public void generate()
     {
-        readCallibrations("Bladnaam_nummer_coord_25000.csv");
+        calibrations=new Calibrations();
+        calibrations.readCalibrationsFromExcel(EXCELFILE);
         readTemplate("template.map");
-        writeMapFiles("./maps/");        
+        writeMapFiles(TIFFDIRECTORY);        
     }
     
     public static void main(String[] args)
@@ -268,7 +279,7 @@ public class Generator
         
         gen=new Generator();
         gen.generate();
-        
+       
         System.out.println("Done");
     }
 }
