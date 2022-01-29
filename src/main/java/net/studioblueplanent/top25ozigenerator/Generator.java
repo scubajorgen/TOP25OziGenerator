@@ -246,6 +246,7 @@ public class Generator
                         }
                         else
                         {
+                            System.out.println("Map "+c.getMapNumber()+", "+c.getMapName());
                             c.setYear(Integer.parseInt(mapYear));
                             writeMapFile(listOfFiles[i].getAbsolutePath().replace(".tif", ".map"), c);
                         }
