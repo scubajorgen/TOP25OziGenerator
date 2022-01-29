@@ -1,9 +1,9 @@
 # TOP25Raster OZI Explorer map file generator
 ## Introduction
-Excellent topographic raster maps of the Netherlands can be loaded at [PDOK](https://www.pdok.nl/introductie/-/article/dataset-basisregistratie-topografie-brt-topraster).
-The format is GeoTIFF. However, this format is not supported directly by [OziExplorer](https://www.oziexplorer4.com/). Though OZI Explorer has a function to import DRG maps, the resulting map file does not seem to have the right coordinates.
+Excellent topographic raster maps of the Netherlands can be downloaded at [PDOK](https://www.pdok.nl/introductie/-/article/dataset-basisregistratie-topografie-brt-topraster).
+The format is GeoTIFF. However, this format is not supported directly by [OZI Explorer](https://www.oziexplorer4.com/). Though OZI Explorer has a function to import DRG maps, the resulting map file does not seem to have the right coordinates.
 
-This quick and dirty java application generates the **OZI Explorer map files* based on the enclosed excel file in the Top25Raster package.
+This quick and dirty java application generates the **OZI Explorer map files** based on information in the enclosed excel file in the Top25Raster package.
 
 I tried OziExplorer and MAPC2MAPC to convert GeoTIFF to Ozi. Both resulted in maps that seem not to be correct when comparing the coordinates of well known calibration points. Therefore I decided to write this little program.
 
@@ -55,7 +55,8 @@ Like stated, OZI Explorer does not support metadata from the  GeoTIFF .tif files
 
 Enclosed in the download package from PDOK is an Excel file (_/TOP25raster_GEOTIFF_[month]_[year]\TOP25raster_Produktinformatie\Bladnaam_nummer_coord 25000.xls_) containing an overview of the enclosed maps together with the coordinates covered by the map. The tool will this information and a .map template to generate the .map files.
 
-During the process the Rijksdriehoeks coordinates are converted to the regular WGS84 in the moving map section. This section is used by OZI Mapmerge a.o.
+During the process the Rijksdriehoeks coordinates are used for the map calibration. However, for the moving map section, the Rijksdriehoeks
+coordinates are converted to the regular WGS84 coordinates. This section is used by OZI Mapmerge a.o. By having this section right OZI Mapmerge of the maps result in proper aligned merged maps.
 
 ## Building
 Build the tool with maven:
@@ -68,12 +69,29 @@ Or build it in your favourite IDE (Netbeans, ...)
 ## Usage
 1. Download the Top25Raster complete set zip from [PDOK](https://www.pdok.nl/downloads/-/article/dataset-basisregistratie-topografie-brt-topraster).
 2. Enter the program directory _TOP25OziGenerator_
-2. Copy the tif files (from the zip) to TOP25raster_GEOTIFF. Basically you need only to copy the tif files you need .map files for
+2. Copy the tif files (from the zip) to _/TOP25raster_GEOTIFF_. Basically you need only to copy the tif files you need .map files for
 3. Copy the excel file _Bladnaam_nummer_coord 25000.xls_ from the zip to _/TOP25raster_Productinformatie_
 4. Run the software: 
-   _java -jar target/TOP25OziGenerator-1.0-SNAPSHOT-jar-with-dependencies.jar_.
-   This wil generate the map files in the directory _TOP25raster_GEOTIFF_
-5. You can now open the map in OZI Explorer 
+   ```
+   java -jar target/TOP25OziGenerator-1.0-SNAPSHOT-jar-with-dependencies.jar
+   ```
+   Output:
+   ```
+   Calibrations read from TOP25raster_Productinformatie/Bladnaam_nummer_coord 25000.xls
+   Reading template
+   Processing file 01c-top25raster-2020.tif
+   Map 01C, FORMERUM
+   Writing D:\files\java\TOP25OziGenerator\TOP25raster_GEOTIFF\01c-top25raster-2020.map
+   Processing file 01d-top25raster-2020.tif
+   Map 01D, OOSTEREND
+   Writing D:\files\java\TOP25OziGenerator\TOP25raster_GEOTIFF\01d-top25raster-2020.map
+   Processing file 01g-top25raster-2020.tif
+   Map 01G, CUPIDO'S POLDER
+   Writing D:\files\java\TOP25OziGenerator\TOP25raster_GEOTIFF\01g-top25raster-2020.map
+   ...
+   ```
+   This wil generate the **.map** files in the directory _/TOP25raster_GEOTIFF_
+5. You can now open the maps in OZI Explorer 
 
 
 ## About the Top25 Raster files
